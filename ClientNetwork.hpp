@@ -13,6 +13,7 @@ class ClientNetwork{
 
     bool isConnected = false;
 public:
+
     ClientNetwork();
     void Connect(const char *, unsigned short);
     void ReceiveTextThread(sf::TcpSocket *);

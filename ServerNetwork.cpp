@@ -88,14 +88,15 @@ void ServerNetwork::ReceivePacket(sf::TcpSocket * client, size_t iterator){
           DisconnectClient(client, iterator);
      }else{
           if(packet.getDataSize() > 0){
+               std::string typeOfData;
                std::string received_message;
-               packet >> received_message;
+               packet >> typeOfData >> received_message;
                packet.clear();
 
-               packet << received_message << client->getRemoteAddress().toString() << client->getRemotePort();
+               packet << typeOfData << received_message << client->getRemoteAddress().toString() << client->getRemotePort();
 
                BroadcastPacket(packet, client->getRemoteAddress(), client->getRemotePort());
-               logl(client->getRemoteAddress().toString() << ":" << client->getRemotePort() << " '" << received_message << "'");
+               logl(client->getRemoteAddress().toString() << ":" << client->getRemotePort() << " 'typeOfData: " << typeOfData << " " << received_message << "'");
           }
      }
 }
