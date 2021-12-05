@@ -17,8 +17,8 @@ void ClientNetwork::Connect(const char * address, unsigned short port){
     }
 }
 
-void ClientNetwork::ReceivePackets(sf::TcpSocket * socket){
-    logl("CLIENTNETWORK: RECEIVEPACKETS CALLED");
+void ClientNetwork::ReceiveTextThread(sf::TcpSocket * socket){
+    logl("CLIENTNETWORK: RECEIVEPACKETSTHREAD CALLED");
 
     while(true){
         if(socket->receive(last_packet) == sf::Socket::Done){
@@ -29,6 +29,45 @@ void ClientNetwork::ReceivePackets(sf::TcpSocket * socket){
 
         std::this_thread::sleep_for((std::chrono::milliseconds)100);
     }
+}
+
+void ClientNetwork::SendTextThread(sf::TcpSocket *socket) {
+    logl("CLIENTNETWORK: SENDTEXTTHREAD CALLED");
+
+    while(true){
+        if(isConnected){
+            std::string user_input;
+            std::getline(std::cin, user_input);
+
+            sf::Packet reply_packet;
+            reply_packet << user_input;
+
+            SendPacket(reply_packet);
+        }
+    }
+}
+
+void ClientNetwork::ReceiveDrawThread(sf::TcpSocket * socket){
+    logl("CLIENTNETWORK: RECEIVEDRAWTHREAD CALLED");
+
+    while(true){
+        if(socket->receive(last_packet) == sf::Socket::Done){
+            std::string received_string; std::string sender_address; unsigned short sender_port;
+            last_packet >> received_string >> sender_address >> sender_port;
+            logl("From (" << sender_address << ":" << sender_port << "): " << received_string);
+        }
+
+        std::this_thread::sleep_for((std::chrono::milliseconds)100);
+    }
+}
+
+void ClientNetwork::SendDrawThread(sf::TcpSocket *socket) {
+    logl("CLIENTNETWORK: SENDDRAWTHREAD CALLED");
+
+    sf::Packet reply_packet;
+    reply_packet << "Message send from SendDrawThread";
+
+    SendPacket(reply_packet);
 }
 
 void ClientNetwork::SendPacket(sf::Packet & packet){
@@ -42,17 +81,14 @@ void ClientNetwork::SendPacket(sf::Packet & packet){
 void ClientNetwork::Run(){
     logl("CLIENTNETWORK: RUN CALLED");
 
-    std::thread reception_thred(&ClientNetwork::ReceivePackets, this, &socket);
+    std::thread reception_thread(&ClientNetwork::ReceiveTextThread, this, &socket);
 
-    while(true){
-        if(isConnected){
-            std::string user_input;
-            std::getline(std::cin, user_input);
+    std::thread send_thread(&ClientNetwork::SendTextThread, this, &socket);
 
-            sf::Packet reply_packet;
-            reply_packet << user_input;
+    std::thread draw_receive_thread(&ClientNetwork::ReceiveDrawThread, this, &socket);
 
-            SendPacket(reply_packet);
-        }
-    }
+    std::thread draw_send_thread(&ClientNetwork::SendDrawThread, this, &socket);
+
+    // inside this while loop, we could have "if typed q, exit loop"
+    while (true);
 }

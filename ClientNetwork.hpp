@@ -15,7 +15,10 @@ class ClientNetwork{
 public:
     ClientNetwork();
     void Connect(const char *, unsigned short);
-    void ReceivePackets(sf::TcpSocket *);
+    void ReceiveTextThread(sf::TcpSocket *);
+    void SendTextThread(sf::TcpSocket *);
+    void ReceiveDrawThread(sf::TcpSocket *);
+    void SendDrawThread(sf::TcpSocket *);
     void SendPacket(sf::Packet &);
     void Run();
 };

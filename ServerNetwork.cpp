@@ -80,7 +80,8 @@ void ServerNetwork::ReceiveRawData(sf::TcpSocket * client, size_t iterator){
 }
 
 void ServerNetwork::ReceivePacket(sf::TcpSocket * client, size_t iterator){
-    logl("SERVERNETWORK: RECEIVEPACKET CALLED");
+    // Don't want to log here because this method gets called a lot
+    // logl("SERVERNETWORK: RECEIVEPACKET CALLED");
 
     sf::Packet packet;
      if(client->receive(packet) == sf::Socket::Disconnected){
