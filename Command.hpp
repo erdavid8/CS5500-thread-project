@@ -8,7 +8,11 @@
 #define COMMAND_HPP
 
 // Include our Third-Party SFML header
-// #include ...
+#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+
 // Include standard library C++ libraries.
 #include <string>
 // Project header files
@@ -33,17 +37,17 @@ public:
     /*! \brief	Virtual function to execute a given Command.
      *
      */
-    virtual bool execute() = 0;
+    virtual bool execute(sf::Image* m_image) = 0;
 
     /*! \brief	Virtual function to undo a given Command.
      *
      */
-    virtual bool undo() = 0;
+    virtual bool undo(sf::Image* m_image) = 0;
 
     /*! \brief	Virtual function to redo a given Command.
      *
      */
-    virtual bool redo() = 0;
+    virtual bool redo(sf::Image* m_image) = 0;
 
     /*! \brief	Virtual function to check whether
      * 		two Commands are the same.

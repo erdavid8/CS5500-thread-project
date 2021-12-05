@@ -10,8 +10,8 @@
 // Include standard library C++ libraries.
 #include <iostream>
 // Project header files
-#include "Draw.hpp"
 #include "App.hpp"
+#include "Draw.hpp"
 
 /*! \brief 	Constructor for Draw, stores the X and Y coordinates of
 *		the pixel that was drawn over.
@@ -38,16 +38,16 @@ int Draw::getNewY() {
 /*! \brief	Runs the draw execution, which consists of drawing
 *	  	the Draw's x and y values onto the image.
 */
-bool Draw::execute() {
-    App::GetInstance().GetImage().setPixel(mNewX, mNewY, sf::Color::Red);
+bool Draw::execute(sf::Image* m_image) {
+    m_image->setPixel(mNewX, mNewY, sf::Color::Red);
     return true;
 }
 
 /*! \brief	Undoing an execute consists of redrawing the pixel with white.
 *
 */
-bool Draw::undo(){
-    App::GetInstance().GetImage().setPixel(mNewX, mNewY, sf::Color::White);
+bool Draw::undo(sf::Image* m_image){
+    m_image->setPixel(mNewX, mNewY, sf::Color::White);
     return true;
 }
 
@@ -55,8 +55,8 @@ bool Draw::undo(){
 * 	  	essentially the same as just executing the action.
 *
 */
-bool Draw::redo() {
-    this->execute();
+bool Draw::redo(sf::Image* m_image) {
+    this->execute(m_image);
     return true;
 }
 

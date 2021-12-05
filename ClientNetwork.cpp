@@ -9,7 +9,7 @@
 *		doing nothing at all.
 *
 */
-void initialization(void){
+void initialization(){
     std::cout << "Starting the App" << std::endl;
 }
 
@@ -18,21 +18,21 @@ void initialization(void){
 *		if for example we want to add in an event loop.
 *
 */
-void update(void){
+void update(App* app){
     // Update our canvas
     sf::Event event;
-    while(App::GetWindow().pollEvent(event)){
+    while(app->GetWindow().pollEvent(event)){
 
     }
 
     // We can otherwise handle events normally
     if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
-        sf::Vector2i coordinate = sf::Mouse::getPosition(App::GetWindow());
+        sf::Vector2i coordinate = sf::Mouse::getPosition(app->GetWindow());
         // hard-coded values, its lazy but this part is not being graded :D
         if (coordinate.x >= 0 && coordinate.x <= 600 && coordinate.y >= 0 && coordinate.y <= 400) {
 
             std::cout << "Hmm, lots of repeats here: " << coordinate.x << "," << coordinate.y << std::endl;
-            App::GetInstance().ExecuteCommand(new Draw(coordinate.x, coordinate.y));
+            app->ExecuteCommand(new Draw(coordinate.x, coordinate.y));
         }
     }
     // Capture any keys that are released
@@ -41,19 +41,21 @@ void update(void){
         std::cout << "exited!" << std::endl;
         exit(EXIT_SUCCESS);
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
-        std::cout << "undoing command!" << std::endl;
-        App::GetInstance().UndoCommand();
+        std::cout << "Undo button pressed!" << std::endl;
+        app->UndoCommand();
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Y)) {
-        std::cout << "redoing command!" << std::endl;
-        App::GetInstance().RedoCommand();
+        std::cout << "Redo button pressed!" << std::endl;
+        app->RedoCommand();
     }
 
 }
 
+
 /*! \brief 	The draw call
 *
 */
-void draw(void){
+void draw(App* app) {
+
     // Static variable
     static int refreshRate = 0;
     ++refreshRate;	// Increment
@@ -65,7 +67,7 @@ void draw(void){
     // Ask yourself: Could we do better with sf::Clock and refresh once
     // 	 	 every 'x' frames?
     if(refreshRate>10){
-        App::GetTexture().loadFromImage(App::GetImage());
+        app->GetTexture().loadFromImage(app->GetImage());
         refreshRate =0;
     }
 }
@@ -161,18 +163,21 @@ void ClientNetwork::Run(){
 
     std::thread draw_send_thread(&ClientNetwork::SendDrawThread, this, &socket);
 
+    App app;
+
     // Call any setup function
     // Passing a function pointer into the 'init' function.
     // of our application.
-    App::Init(&initialization);
+
+    app.Init(&initialization);
     // Setup your keyboard
-    App::UpdateCallback(&update);
+    app.UpdateCallback(&update);
     // Setup the Draw Function
-    App::DrawCallback(&draw);
+    app.DrawCallback(&draw);
     // Call the main loop function
-    App::Loop();
+    app.Loop();
     // Destroy our app
-    App::Destroy();
+    app.Destroy();
 
     // inside this while loop, we could have "if typed q, exit loop"
     while (true);

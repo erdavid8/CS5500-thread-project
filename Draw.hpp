@@ -24,9 +24,9 @@
 // overriding the behavior of functions in a base class
 // that are implemented as virtual.
 class Draw : public Command{
-    bool execute() override;
-    bool undo() override;
-    bool redo() override;
+    bool execute(sf::Image* m_image) override;
+    bool undo(sf::Image* m_image) override;
+    bool redo(sf::Image* m_image) override;
     bool operator==(Command& other) override;
 public:
     Draw(int newX, int newY);

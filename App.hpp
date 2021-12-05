@@ -24,31 +24,34 @@ class App{
 private:
 // Member variables
     // Stack that stores the most recently done command.
-    static std::stack<Command*> m_undo;
-    // Stack that stores the most recently undone command.
-    static std::stack<Command*> m_redo;
+    std::stack<Command*> m_undo;	// Stack that stores the most recently undone command.
+    std::stack<Command*> m_redo;
     // Main image
-    static sf::Image* m_image;
+    sf::Image* m_image;
     // Create a sprite that we overaly
     // on top of the texture.
-    static sf::Sprite* m_sprite;
+    sf::Sprite* m_sprite;
     // Texture sent to the GPU for rendering
-    static sf::Texture* m_texture;
+    sf::Texture* m_texture;
     // Our rendering window
-    static sf::RenderWindow* m_window;
+    sf::RenderWindow* m_window;
 
 // Member functions
-    // Default constructor which is hidden in the Singleton
-    App() {
-
-    }
     // Store the address of our funcion pointer
     // for each of the callback functions.
-    static void (*m_initFunc)(void);
-    static void (*m_updateFunc)(void);
-    static void (*m_drawFunc)(void);
+    void (*m_initFunc)();
+    void (*m_updateFunc)(App *app);
+    void (*m_drawFunc)(App *app);
 
 public:
+
+    App() {
+        m_window = nullptr;
+        m_image = new sf::Image;
+        m_sprite = new sf::Sprite;
+        m_texture = new sf::Texture;
+    }
+
 // Member Variables
     // Keeps track of the previous mouse and current mouse positions
     // 'pmouse' is where the mouse previously was.
@@ -67,17 +70,15 @@ public:
     void    UndoCommand();
     void    RedoCommand();
 
-    static App& GetInstance();
+    sf::Image& GetImage();
+    sf::Texture& GetTexture();
+    sf::RenderWindow& GetWindow();
 
-    static sf::Image& GetImage();
-    static sf::Texture& GetTexture();
-    static sf::RenderWindow& GetWindow();
-
-    static void Destroy();
-    static void Init(void (*initFunction)(void));
-    static void UpdateCallback(void (*updateFunction)(void));
-    static void DrawCallback(void (*drawFunction)(void));
-    static void Loop();
+    void Destroy();
+    void Init(void (*initFunction)(void));
+    void UpdateCallback(void (*updateFunction)(App* app));
+    void DrawCallback(void (*drawFunction)(App* app));
+    void Loop();
 
 };
 

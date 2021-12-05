@@ -16,35 +16,6 @@
 // Project header files
 #include "App.hpp"
 
-// All static members of a Singleton need to initialized to some value.
-// This is so that when the program is compiled, memory is reserved
-// for each of these static values.
-// Potentially handy data structures for building an undo system.
-// TODO: Decide, modify, add or remove any data structures you need.
-std::stack<Command*> App::m_undo;
-std::stack<Command*> App::m_redo;
-// Function pointers
-void (*App::m_initFunc)(void) = nullptr;
-void (*App::m_updateFunc)(void) = nullptr;
-void (*App::m_drawFunc)(void) = nullptr;
-// Canvas variables
-sf::RenderWindow* App::m_window = nullptr;
-
-sf::Image* App::m_image = new sf::Image;
-sf::Sprite* App::m_sprite = new sf::Sprite;
-sf::Texture* App::m_texture = new sf::Texture;
-
-/*! \brief	Static Method to create instance of Singleton class.
-*
-*/
-App& App::GetInstance() {
-    static App* instance = new App();
-    if (instance != nullptr) {
-
-    }
-    return *instance;
-}
-
 /*! \brief 	We should execute commands in a data structure
 *		Perhaps we will have to modify the logic in our
 *		loop!
@@ -61,7 +32,8 @@ void App::ExecuteCommand(Command* c){
     while(!m_redo.empty()) {
         m_redo.pop();
     }
-    c->execute();
+    sf::Image& m_image = this->GetImage();
+    c->execute(&m_image);
     m_undo.push(c);
 }
 
@@ -73,7 +45,8 @@ void App::UndoCommand() {
         return;
     }
 
-    m_undo.top()->undo();
+    sf::Image& m_image = this->GetImage();
+    m_undo.top()->undo(&m_image);
     m_redo.push(m_undo.top());
     m_undo.pop();
 }
@@ -85,7 +58,9 @@ void App::RedoCommand() {
     if (m_redo.size() <= 0) {
         return;
     }
-    m_redo.top()->redo();
+
+    sf::Image& m_image = this->GetImage();
+    m_redo.top()->redo(&m_image);
     m_undo.push(m_redo.top());
     m_redo.pop();
 }
@@ -149,7 +124,7 @@ void App::Init(void (*initFunction)(void)){
 		each iteration of the main loop before drawing.
 *
 */
-void App::UpdateCallback(void (*updateFunction)(void)){
+void App::UpdateCallback(void (*updateFunction)(App* app)){
     m_updateFunc = updateFunction;
 }
 
@@ -157,7 +132,7 @@ void App::UpdateCallback(void (*updateFunction)(void)){
 		each iteration of the main loop after update.
 *
 */
-void App::DrawCallback(void (*drawFunction)(void)){
+void App::DrawCallback(void (*drawFunction)(App* app)){
     m_drawFunc = drawFunction;
 }
 
@@ -176,9 +151,9 @@ void App::Loop(){
         // Clear the window
         m_window->clear();
         // Updates specified by the user
-        m_updateFunc();
+        m_updateFunc(this);
         // Additional drawing specified by user
-        m_drawFunc();
+        m_drawFunc(this);
         // Update the texture
         // Note: This can be done in the 'draw call'
         // Draw to the canvas
