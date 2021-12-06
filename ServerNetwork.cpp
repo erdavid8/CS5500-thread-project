@@ -137,7 +137,7 @@ void ServerNetwork::ManagePackets(){
 void ServerNetwork::Run(){
     logl("SERVERNETWORK: RUN CALLED");
 
-    std::thread connetion_thread(&ServerNetwork::ConnectClients, this, &client_array);
+    std::thread connection_thread(&ServerNetwork::ConnectClients, this, &client_array);
 
      ManagePackets();
 }

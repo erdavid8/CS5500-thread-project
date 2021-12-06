@@ -147,7 +147,7 @@ void App::Update(ClientNetwork* clientNetwork){
 //            clientNetwork->SendPacket(reply_packet);
 
             // execute locally here; it might be better to instead execute if server sends something back?
-            this->ExecuteCommand(new Draw(coordinate.x, coordinate.y));
+//            this->ExecuteCommand(new Draw(coordinate.x, coordinate.y));
         }
     }
     // Capture any keys that are released

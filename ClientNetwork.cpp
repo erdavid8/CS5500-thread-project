@@ -157,13 +157,13 @@ void ClientNetwork::SendPacket(sf::Packet & packet){
 void ClientNetwork::Run(){
     logl("CLIENTNETWORK: RUN CALLED");
 
+    App app;
+
     std::thread reception_thread(&ClientNetwork::ReceiveTextOrDrawThread, this, &socket);
 
-    std::thread send_thread(&ClientNetwork::SendTextThread, this);
+    std::thread text_send_thread(&ClientNetwork::SendTextThread, this);
 
     std::thread draw_send_thread(&ClientNetwork::SendDrawThread, this, 69, 69);
-
-    App app;
 
     // Call any setup function
     // Passing a function pointer into the 'init' function.
