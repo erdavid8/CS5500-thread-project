@@ -44,11 +44,11 @@ void ServerNetwork::BroadcastPacket(sf::Packet & packet, sf::IpAddress exclude_a
 
     for(size_t iterator = 0; iterator < client_array.size(); iterator++){
           sf::TcpSocket * client = client_array[iterator];
-          if(client->getRemoteAddress() != exclude_address || client->getRemotePort() != port){
+//          if(client->getRemoteAddress() != exclude_address || client->getRemotePort() != port){
                if(client->send(packet) != sf::Socket::Done){
                     logl("Could not send packet on broadcast");
                }
-          }
+//          }
      }
 }
 
@@ -112,7 +112,7 @@ void ServerNetwork::ReceivePacket(sf::TcpSocket * client, size_t iterator){
 
                   BroadcastPacket(packet, client->getRemoteAddress(), client->getRemotePort());
                   logl(client->getRemoteAddress().toString() << ":" << client->getRemotePort() << " 'typeOfData: "
-                                                             << "draw" << " x=" << x << " y=" << y);
+                                                             << typeOfData << " x=" << x << " y=" << y);
               } else {
                   logl("UNEXPECTED ERROR!");
               }
