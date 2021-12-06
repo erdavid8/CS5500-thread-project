@@ -92,7 +92,7 @@ void ClientNetwork::Connect(const char * address, unsigned short port){
     }
 }
 
-void ClientNetwork::ReceiveTextThread(sf::TcpSocket * socket){
+void ClientNetwork::ReceiveTextOrDrawThread(sf::TcpSocket * socket){
     logl("CLIENTNETWORK: RECEIVEPACKETSTHREAD CALLED");
 
     while(true){
@@ -134,20 +134,6 @@ void ClientNetwork::SendTextThread() {
     }
 }
 
-//void ClientNetwork::ReceiveDrawThread(sf::TcpSocket * socket){
-//    logl("CLIENTNETWORK: RECEIVEDRAWTHREAD CALLED");
-//
-//    while(true){
-//        if(socket->receive(last_packet) == sf::Socket::Done){
-//            std::string received_string; std::string sender_address; unsigned short sender_port;
-//            last_packet >> received_string >> sender_address >> sender_port;
-//            logl("From (" << sender_address << ":" << sender_port << "): " << received_string);
-//        }
-//
-//        std::this_thread::sleep_for((std::chrono::milliseconds)100);
-//    }
-//}
-
 void ClientNetwork::SendDrawThread(int x, int y) {
     logl("CLIENTNETWORK: SENDDRAWTHREAD CALLED");
 
@@ -171,11 +157,9 @@ void ClientNetwork::SendPacket(sf::Packet & packet){
 void ClientNetwork::Run(){
     logl("CLIENTNETWORK: RUN CALLED");
 
-    std::thread reception_thread(&ClientNetwork::ReceiveTextThread, this, &socket);
+    std::thread reception_thread(&ClientNetwork::ReceiveTextOrDrawThread, this, &socket);
 
     std::thread send_thread(&ClientNetwork::SendTextThread, this);
-
-//    std::thread draw_receive_thread(&ClientNetwork::ReceiveDrawThread, this, &socket);
 
     std::thread draw_send_thread(&ClientNetwork::SendDrawThread, this, 69, 69);
 
