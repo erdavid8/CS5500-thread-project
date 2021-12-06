@@ -101,7 +101,7 @@ void ServerNetwork::ReceivePacket(sf::TcpSocket * client, size_t iterator){
 
                   BroadcastPacket(packet, client->getRemoteAddress(), client->getRemotePort());
                   logl(client->getRemoteAddress().toString() << ":" << client->getRemotePort() << " 'typeOfData: "
-                                                             << typeOfData << " " << received_message << "'");
+                                                             << "text" << " " << received_message << "'");
               } else if (typeOfData == "d") {
                   int x; int y;
                   packet >> x >> y;
@@ -112,7 +112,7 @@ void ServerNetwork::ReceivePacket(sf::TcpSocket * client, size_t iterator){
 
                   BroadcastPacket(packet, client->getRemoteAddress(), client->getRemotePort());
                   logl(client->getRemoteAddress().toString() << ":" << client->getRemotePort() << " 'typeOfData: "
-                                                             << typeOfData << " " << x << ", " << y);
+                                                             << "draw" << " x=" << x << " y=" << y);
               } else {
                   logl("UNEXPECTED ERROR!");
               }

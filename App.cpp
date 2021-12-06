@@ -140,10 +140,11 @@ void App::Update(ClientNetwork* clientNetwork){
             std::cout << "Hmm, lots of repeats here: " << coordinate.x << "," << coordinate.y << std::endl;
 
             // send this packet back to the server
-            std::string typeOfData = "d";
-            sf::Packet reply_packet;
-            reply_packet << typeOfData << coordinate.x << coordinate.y;
-            clientNetwork->SendPacket(reply_packet);
+            clientNetwork->SendDrawThread(coordinate.x, coordinate.y);
+//            std::string typeOfData = "d";
+//            sf::Packet reply_packet;
+//            reply_packet << typeOfData << coordinate.x << coordinate.y;
+//            clientNetwork->SendPacket(reply_packet);
 
             // execute locally here; it might be better to instead execute if server sends something back?
             this->ExecuteCommand(new Draw(coordinate.x, coordinate.y));

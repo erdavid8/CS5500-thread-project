@@ -97,16 +97,25 @@ void ClientNetwork::ReceiveTextThread(sf::TcpSocket * socket){
 
     while(true){
         if(socket->receive(last_packet) == sf::Socket::Done){
-            std::string typeOfData; std::string received_string; std::string sender_address; unsigned short sender_port;
-            last_packet >> typeOfData >> received_string >> sender_address >> sender_port;
-            logl(typeOfData << " From (" << sender_address << ":" << sender_port << "): " << received_string);
+            std::string typeOfData;
+            last_packet >> typeOfData;
+
+            if (typeOfData == "t") {
+                std::string received_string; std::string sender_address; unsigned short sender_port;
+                last_packet >> received_string >> sender_address >> sender_port;
+                logl("text" << " From (" << sender_address << ":" << sender_port << "): " << received_string);
+            } else if (typeOfData == "d") {
+                int x; int y; std::string sender_address; unsigned short sender_port;
+                last_packet >> x >> y >> sender_address >> sender_port;
+                logl("draw" << " From (" << sender_address << ":" << sender_port << "): x=" << x << " y=" << y);
+            }
         }
 
         std::this_thread::sleep_for((std::chrono::milliseconds)100);
     }
 }
 
-void ClientNetwork::SendTextThread(sf::TcpSocket *socket) {
+void ClientNetwork::SendTextThread() {
     logl("CLIENTNETWORK: SENDTEXTTHREAD CALLED");
 
     while(true){
@@ -139,13 +148,13 @@ void ClientNetwork::SendTextThread(sf::TcpSocket *socket) {
 //    }
 //}
 
-void ClientNetwork::SendDrawThread(sf::TcpSocket *socket) {
+void ClientNetwork::SendDrawThread(int x, int y) {
     logl("CLIENTNETWORK: SENDDRAWTHREAD CALLED");
 
     std::string typeOfData = "d";
 
     sf::Packet reply_packet;
-    reply_packet << typeOfData << "Message send from SendDrawThread";
+    reply_packet << typeOfData << x << y;
 
     SendPacket(reply_packet);
 }
@@ -164,11 +173,11 @@ void ClientNetwork::Run(){
 
     std::thread reception_thread(&ClientNetwork::ReceiveTextThread, this, &socket);
 
-    std::thread send_thread(&ClientNetwork::SendTextThread, this, &socket);
+    std::thread send_thread(&ClientNetwork::SendTextThread, this);
 
 //    std::thread draw_receive_thread(&ClientNetwork::ReceiveDrawThread, this, &socket);
 
-    std::thread draw_send_thread(&ClientNetwork::SendDrawThread, this, &socket);
+    std::thread draw_send_thread(&ClientNetwork::SendDrawThread, this, 69, 69);
 
     App app;
 

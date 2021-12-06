@@ -17,9 +17,9 @@ public:
     ClientNetwork();
     void Connect(const char *, unsigned short);
     void ReceiveTextThread(sf::TcpSocket *);
-    void SendTextThread(sf::TcpSocket *);
+    void SendTextThread();
     void ReceiveDrawThread(sf::TcpSocket *);
-    void SendDrawThread(sf::TcpSocket *);
+    void SendDrawThread(int x, int y);
     void SendPacket(sf::Packet &);
     void Run();
 };
