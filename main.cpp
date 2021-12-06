@@ -28,7 +28,6 @@
 #include <iostream>
 #include <string>
 // Project header files
-#include "App.hpp"
 #include "Draw.hpp"
 
 int main(int argc, char * argv[]){

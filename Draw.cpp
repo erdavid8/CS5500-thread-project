@@ -10,7 +10,6 @@
 // Include standard library C++ libraries.
 #include <iostream>
 // Project header files
-#include "App.hpp"
 #include "Draw.hpp"
 
 /*! \brief 	Constructor for Draw, stores the X and Y coordinates of

@@ -1,5 +1,4 @@
 #include "ClientNetwork.hpp"
-#include "App.hpp"
 #include "Draw.hpp"
 #include <assert.h>
 
