@@ -87,16 +87,35 @@ void ServerNetwork::ReceivePacket(sf::TcpSocket * client, size_t iterator){
      if(client->receive(packet) == sf::Socket::Disconnected){
           DisconnectClient(client, iterator);
      }else{
-          if(packet.getDataSize() > 0){
-               std::string typeOfData;
-               std::string received_message;
-               packet >> typeOfData >> received_message;
-               packet.clear();
+          if(packet.getDataSize() > 0) {
+              std::string typeOfData;
+              packet >> typeOfData;
 
-               packet << typeOfData << received_message << client->getRemoteAddress().toString() << client->getRemotePort();
+              if (typeOfData == "t") {
+                  std::string received_message;
+                  packet >> received_message;
+                  packet.clear();
 
-               BroadcastPacket(packet, client->getRemoteAddress(), client->getRemotePort());
-               logl(client->getRemoteAddress().toString() << ":" << client->getRemotePort() << " 'typeOfData: " << typeOfData << " " << received_message << "'");
+                  packet << typeOfData << received_message << client->getRemoteAddress().toString()
+                         << client->getRemotePort();
+
+                  BroadcastPacket(packet, client->getRemoteAddress(), client->getRemotePort());
+                  logl(client->getRemoteAddress().toString() << ":" << client->getRemotePort() << " 'typeOfData: "
+                                                             << typeOfData << " " << received_message << "'");
+              } else if (typeOfData == "d") {
+                  int x; int y;
+                  packet >> x >> y;
+                  packet.clear();
+
+                  packet << typeOfData << x << y << client->getRemoteAddress().toString()
+                                                 << client->getRemotePort();
+
+                  BroadcastPacket(packet, client->getRemoteAddress(), client->getRemotePort());
+                  logl(client->getRemoteAddress().toString() << ":" << client->getRemotePort() << " 'typeOfData: "
+                                                             << typeOfData << " " << x << ", " << y);
+              } else {
+                  logl("UNEXPECTED ERROR!");
+              }
           }
      }
 }
