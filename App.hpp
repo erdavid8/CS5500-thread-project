@@ -15,7 +15,9 @@
 // Include standard library C++ libraries.
 #include <queue>
 #include <stack>
+#include <SFML/Network/TcpSocket.hpp>
 #include "Command.hpp"
+#include "ClientNetwork.hpp"
 // Project header files
 // #include ...
 
@@ -35,13 +37,6 @@ private:
     sf::Texture* m_texture;
     // Our rendering window
     sf::RenderWindow* m_window;
-
-// Member functions
-    // Store the address of our funcion pointer
-    // for each of the callback functions.
-    void (*m_initFunc)();
-    void (*m_updateFunc)(App *app);
-    void (*m_drawFunc)(App *app);
 
 public:
 
@@ -75,10 +70,10 @@ public:
     sf::RenderWindow& GetWindow();
 
     void Destroy();
-    void Init(void (*initFunction)(void));
-    void UpdateCallback(void (*updateFunction)(App* app));
-    void DrawCallback(void (*drawFunction)(App* app));
-    void Loop();
+    void Init();
+    void Update(ClientNetwork* clientNetwork);
+    void DrawFunc();
+    void Loop(ClientNetwork* clientNetwork);
 
 };
 

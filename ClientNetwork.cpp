@@ -176,13 +176,13 @@ void ClientNetwork::Run(){
     // Passing a function pointer into the 'init' function.
     // of our application.
 
-    app.Init(&initialization);
+    app.Init();
     // Setup your keyboard
-    app.UpdateCallback(&update);
+    app.Update(this);
     // Setup the Draw Function
-    app.DrawCallback(&draw);
+    app.DrawFunc();
     // Call the main loop function
-    app.Loop();
+    app.Loop(this);
     // Destroy our app
     app.Destroy();
 

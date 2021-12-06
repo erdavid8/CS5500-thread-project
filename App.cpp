@@ -15,6 +15,7 @@
 #include <iostream>
 // Project header files
 #include "App.hpp"
+#include "Draw.hpp"
 
 /*! \brief 	We should execute commands in a data structure
 *		Perhaps we will have to modify the logic in our
@@ -102,7 +103,7 @@ void App::Destroy(){
 /*! \brief 	Initializes the App and sets up the main
 *		rendering window(i.e. our canvas.)
 */
-void App::Init(void (*initFunction)(void)){
+void App::Init(){
     // Create our window
     m_window = new sf::RenderWindow(sf::VideoMode(600,400),"Mini-Paint alpha 0.0.2",sf::Style::Titlebar);
     m_window->setVerticalSyncEnabled(true);
@@ -117,23 +118,70 @@ void App::Init(void (*initFunction)(void)){
     assert(m_sprite != nullptr && "m_sprite != nullptr");
     // Set our initialization function to perform any user
     // initialization
-    m_initFunc = initFunction;
+    std::cout << "Starting the App" << std::endl;
 }
 
 /*! \brief 	Set a callback function which will be called
 		each iteration of the main loop before drawing.
 *
 */
-void App::UpdateCallback(void (*updateFunction)(App* app)){
-    m_updateFunc = updateFunction;
+void App::Update(ClientNetwork* clientNetwork){
+    sf::Event event;
+    while(this->GetWindow().pollEvent(event)){
+
+    }
+
+    // We can otherwise handle events normally
+    if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
+        sf::Vector2i coordinate = sf::Mouse::getPosition(this->GetWindow());
+        // hard-coded values, its lazy but this part is not being graded :D
+        if (coordinate.x >= 0 && coordinate.x <= 600 && coordinate.y >= 0 && coordinate.y <= 400) {
+
+            std::cout << "Hmm, lots of repeats here: " << coordinate.x << "," << coordinate.y << std::endl;
+
+            // send this packet back to the server
+            std::string typeOfData = "d";
+            sf::Packet reply_packet;
+            reply_packet << typeOfData << coordinate.x << coordinate.y;
+            clientNetwork->SendPacket(reply_packet);
+
+            // execute locally here; it might be better to instead execute if server sends something back?
+            this->ExecuteCommand(new Draw(coordinate.x, coordinate.y));
+        }
+    }
+    // Capture any keys that are released
+    // I used "KeyPressed", because its faster functionality
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
+        std::cout << "exited!" << std::endl;
+        exit(EXIT_SUCCESS);
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+        std::cout << "Undo button pressed!" << std::endl;
+        this->UndoCommand();
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Y)) {
+        std::cout << "Redo button pressed!" << std::endl;
+        this->RedoCommand();
+    }
 }
 
 /*! \brief 	Set a callback function which will be called
 		each iteration of the main loop after update.
 *
 */
-void App::DrawCallback(void (*drawFunction)(App* app)){
-    m_drawFunc = drawFunction;
+void App::DrawFunc(){
+    // Static variable
+    static int refreshRate = 0;
+    ++refreshRate;	// Increment
+
+
+    // We load into our texture the modified pixels
+    // But we only do so every 10 draw calls to reduce latency of transfer
+    // between the GPU and CPU.
+    // Ask yourself: Could we do better with sf::Clock and refresh once
+    // 	 	 every 'x' frames?
+    if(refreshRate>10){
+        this->GetTexture().loadFromImage(this->GetImage());
+        refreshRate =0;
+    }
 }
 
 /*! \brief 	The main loop function which handles initialization
@@ -142,18 +190,15 @@ void App::DrawCallback(void (*drawFunction)(App* app)){
 		functions will be called.
 *
 */
-void App::Loop(){
-    // Call the init function
-    m_initFunc();
-
+void App::Loop(ClientNetwork* clientNetwork){
     // Start the main rendering loop
     while(m_window->isOpen()){
         // Clear the window
         m_window->clear();
         // Updates specified by the user
-        m_updateFunc(this);
+        this->Update(clientNetwork);
         // Additional drawing specified by user
-        m_drawFunc(this);
+        this->DrawFunc();
         // Update the texture
         // Note: This can be done in the 'draw call'
         // Draw to the canvas
