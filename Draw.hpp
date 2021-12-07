@@ -30,11 +30,14 @@ class Draw : public Command{
     bool operator==(Command& other) override;
 public:
     Draw(int newX, int newY);
+    Draw(int newX, int newY,sf::Color prev_color, sf::Color curr_color);
     int getNewX();
     int getNewY();
 private:
     int mNewX;
     int mNewY;
+    sf::Color prev_color;
+    sf::Color curr_color;
 };
 
 #endif

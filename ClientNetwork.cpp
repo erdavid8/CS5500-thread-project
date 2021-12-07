@@ -1,6 +1,8 @@
 #include "ClientNetwork.hpp"
 #include "Draw.hpp"
 #include <assert.h>
+#include <map>
+#include <unordered_map>
 
 // "App" functions
 /*! \brief 	We should execute commands in a data structure
@@ -52,6 +54,14 @@ void ClientNetwork::RedoCommand() {
     m_redo.pop();
 }
 
+void ClientNetwork::clearStacks(){
+    while (!m_undo.empty()){
+        m_undo.pop();
+    }
+    while (!m_redo.empty()){
+        m_redo.pop();
+    }
+}
 
 /*! \brief 	Return a reference to our m_image, so that
 *		we do not have to publicly expose it.
@@ -75,6 +85,20 @@ sf::Texture& ClientNetwork::GetTexture(){
 */
 sf::RenderWindow& ClientNetwork::GetWindow(){
     return *m_window;
+}
+
+sf::Color ClientNetwork::getCurrColor(){
+    //std::cout << currColor.toInteger() << std::endl;
+    return currColor;
+}
+void ClientNetwork::setCurrColor(sf::Color color){
+    std::cout << "Updated the current paint color" << std::endl;
+    currColor = color;
+}
+void ClientNetwork::setImage(sf::Image *image){
+    delete m_image;
+    m_image = image;
+    std::cout << "New image set" << std::endl;
 }
 
 /*! \brief 	Destroy we manually call at end of our program.
@@ -117,6 +141,38 @@ void ClientNetwork::Update(){
 
     }
 
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)){
+        this->setCurrColor(sf::Color::Black);
+    }
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num2)){
+        this->setCurrColor(sf::Color::White);
+    }
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num3)){
+        this->setCurrColor(sf::Color::Red);
+    }
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num4)){
+        this->setCurrColor(sf::Color::Green);
+    }
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num5)){
+        this->setCurrColor(sf::Color::Blue);
+    }
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num6)){
+        this->setCurrColor(sf::Color::Yellow);
+    }
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num7)){
+        this->setCurrColor(sf::Color::Magenta);
+    }
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num8)){
+        this->setCurrColor(sf::Color::Cyan);
+    }
+
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space)){
+        this->clearStacks();
+        sf::Image* n_image = new sf::Image();
+        n_image->create(600,400,this->getCurrColor());
+        this->setImage(n_image);
+    }
+
     // We can otherwise handle events normally
     if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
         sf::Vector2i coordinate = sf::Mouse::getPosition(this->GetWindow());
@@ -126,7 +182,7 @@ void ClientNetwork::Update(){
             std::cout << "Hmm, lots of repeats here: " << coordinate.x << "," << coordinate.y << std::endl;
 
             // send this packet back to the server
-            this->SendDrawThread(coordinate.x, coordinate.y);
+            this->SendDrawThread(coordinate.x, coordinate.y, this->GetImage().getPixel(coordinate.x, coordinate.y),this->getCurrColor());
 //            std::string typeOfData = "d";
 //            sf::Packet reply_packet;
 //            reply_packet << typeOfData << coordinate.x << coordinate.y;
@@ -134,6 +190,8 @@ void ClientNetwork::Update(){
 
             // execute locally here; it might be better to instead execute if server sends something back?
 //            this->ExecuteCommand(new Draw(coordinate.x, coordinate.y));
+//            app->ExecuteCommand(new Draw(coordinate.x, coordinate.y,app->GetImage().getPixel(coordinate.x, coordinate.y)
+//                    ,app->getCurrColor()));
         }
     }
     // Capture any keys that are released
@@ -202,6 +260,7 @@ ClientNetwork::ClientNetwork(){
     m_image = new sf::Image;
     m_sprite = new sf::Sprite;
     m_texture = new sf::Texture;
+    currColor = sf::Color::Black;
     logl("Chat Client Started");
 }
 
@@ -219,6 +278,19 @@ void ClientNetwork::Connect(const char * address, unsigned short port){
 void ClientNetwork::ReceiveTextOrDrawThread(sf::TcpSocket * socket){
     logl("CLIENTNETWORK: RECEIVEPACKETSTHREAD CALLED");
 
+
+    // map of int to sf::Color
+    std::map<int, sf::Color> sample_map {
+        {1, sf::Color::Black},
+        {2, sf::Color::White},
+        {3, sf::Color::Red},
+        {4, sf::Color::Green},
+        {5, sf::Color::Blue},
+        {6, sf::Color::Yellow},
+        {7, sf::Color::Magenta},
+        {8, sf::Color::Cyan}
+    };
+
     while(true){
         if(socket->receive(last_packet) == sf::Socket::Done){
             std::string typeOfData;
@@ -229,10 +301,12 @@ void ClientNetwork::ReceiveTextOrDrawThread(sf::TcpSocket * socket){
                 last_packet >> received_string >> sender_address >> sender_port;
                 logl("text" << " From (" << sender_address << ":" << sender_port << "): " << received_string);
             } else if (typeOfData == "d") {
-                int x; int y; std::string sender_address; unsigned short sender_port;
-                last_packet >> x >> y >> sender_address >> sender_port;
+                int x; int y; int prevColorInt; int currColorInt; std::string sender_address; unsigned short sender_port;
+                last_packet >> x >> y >> prevColorInt >> currColorInt >> sender_address >> sender_port;
+                sf::Color prevColor = sample_map[prevColorInt];
+                sf::Color currColor = sample_map[currColorInt];
                 logl(typeOfData << " From (" << sender_address << ":" << sender_port << "): x=" << x << " y=" << y);
-                this->ExecuteCommand(new Draw(x, y));
+                this->ExecuteCommand(new Draw(x, y, prevColor, currColor));
             }
         }
 
@@ -259,13 +333,53 @@ void ClientNetwork::SendTextThread() {
     }
 }
 
-void ClientNetwork::SendDrawThread(int x, int y) {
+void ClientNetwork::SendDrawThread(int x, int y, sf::Color prevColor, sf::Color currColor) {
     logl("CLIENTNETWORK: SENDDRAWTHREAD CALLED");
+
+    int prevColorInt;
+    int currColorInt;
+
+    // THIS BAD CODE lol
+    if (prevColor == sf::Color::Black) {
+        prevColorInt = 1;
+    } else if (prevColor == sf::Color::White) {
+        prevColorInt = 2;
+    } else if (prevColor == sf::Color::Red) {
+        prevColorInt = 3;
+    } else if (prevColor == sf::Color::Green) {
+        prevColorInt = 4;
+    } else if (prevColor == sf::Color::Blue) {
+        prevColorInt = 5;
+    } else if (prevColor == sf::Color::Yellow) {
+        prevColorInt = 6;
+    } else if (prevColor == sf::Color::Magenta) {
+        prevColorInt = 7;
+    } else {
+        prevColorInt = 8;
+    }
+
+    if (currColor == sf::Color::Black) {
+        currColorInt = 1;
+    } else if (currColor == sf::Color::White) {
+        currColorInt = 2;
+    } else if (currColor == sf::Color::Red) {
+        currColorInt = 3;
+    } else if (currColor == sf::Color::Green) {
+        currColorInt = 4;
+    } else if (currColor == sf::Color::Blue) {
+        currColorInt = 5;
+    } else if (currColor == sf::Color::Yellow) {
+        currColorInt = 6;
+    } else if (currColor == sf::Color::Magenta) {
+        currColorInt = 7;
+    } else {
+        currColorInt = 8;
+    }
 
     std::string typeOfData = "d";
 
     sf::Packet reply_packet;
-    reply_packet << typeOfData << x << y;
+    reply_packet << typeOfData << x << y << prevColorInt << currColorInt;
 
     SendPacket(reply_packet);
 }
@@ -286,7 +400,7 @@ void ClientNetwork::Run(){
 
     std::thread text_send_thread(&ClientNetwork::SendTextThread, this); // dont think these need to be off the main thread
 
-    std::thread draw_send_thread(&ClientNetwork::SendDrawThread, this, 69, 69); // dont think these need to be off the main thread
+    std::thread draw_send_thread(&ClientNetwork::SendDrawThread, this, 69, 69, sf::Color::White, sf::Color::White); // dont think these need to be off the main thread
 
     // Call any setup function
     // Passing a function pointer into the 'init' function.

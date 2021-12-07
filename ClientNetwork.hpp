@@ -25,6 +25,7 @@ class ClientNetwork{
     sf::Texture* m_texture;
     // Our rendering window
     sf::RenderWindow* m_window;
+    sf::Color currColor;
 
     // "ClientNetwork" member variables
     sf::TcpSocket socket;
@@ -37,9 +38,14 @@ public:
     void    UndoCommand();
     void    RedoCommand();
 
+    void setCurrColor(sf::Color color);
+    void clearStacks();
+    void setImage(sf::Image *image);
+
     sf::Image& GetImage();
     sf::Texture& GetTexture();
     sf::RenderWindow& GetWindow();
+    sf::Color getCurrColor();
 
     void Destroy();
     void Init();
@@ -54,7 +60,7 @@ public:
     void ReceiveTextOrDrawThread(sf::TcpSocket *);
     void SendTextThread();
     void ReceiveDrawThread(sf::TcpSocket *);
-    void SendDrawThread(int x, int y);
+    void SendDrawThread(int x, int y, sf::Color prevColor, sf::Color currColor);
     void SendPacket(sf::Packet &);
     void Run();
 };

@@ -103,11 +103,11 @@ void ServerNetwork::ReceivePacket(sf::TcpSocket * client, size_t iterator){
                   logl(client->getRemoteAddress().toString() << ":" << client->getRemotePort() << " 'typeOfData: "
                                                              << "text" << " " << received_message << "'");
               } else if (typeOfData == "d") {
-                  int x; int y;
-                  packet >> x >> y;
+                  int x; int y; int prevColorInt; int currColorInt;
+                  packet >> x >> y >> prevColorInt >> currColorInt;
                   packet.clear();
 
-                  packet << typeOfData << x << y << client->getRemoteAddress().toString()
+                  packet << typeOfData << x << y << prevColorInt << currColorInt << client->getRemoteAddress().toString()
                                                  << client->getRemotePort();
 
                   BroadcastPacket(packet, client->getRemoteAddress(), client->getRemotePort());

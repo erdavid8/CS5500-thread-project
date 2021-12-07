@@ -20,6 +20,13 @@ Draw::Draw(int newX, int newY) {
     this->mNewY = newY;
 }
 
+Draw::Draw(int newX, int newY, sf::Color prev_color,sf::Color curr_color) {
+    this->mNewX = newX;
+    this->mNewY = newY;
+    this->prev_color = prev_color;
+    this->curr_color = curr_color;
+}
+
 /*! \brief      Getter method for X coordinate that was drawn over.
 *
 */
@@ -38,7 +45,7 @@ int Draw::getNewY() {
 *	  	the Draw's x and y values onto the image.
 */
 bool Draw::execute(sf::Image* m_image) {
-    m_image->setPixel(mNewX, mNewY, sf::Color::Red);
+    m_image->setPixel(mNewX, mNewY, curr_color);
     return true;
 }
 
@@ -46,7 +53,7 @@ bool Draw::execute(sf::Image* m_image) {
 *
 */
 bool Draw::undo(sf::Image* m_image){
-    m_image->setPixel(mNewX, mNewY, sf::Color::White);
+    m_image->setPixel(mNewX, mNewY, prev_color);
     return true;
 }
 
